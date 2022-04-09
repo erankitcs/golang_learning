@@ -1,0 +1,4 @@
+INFO: 07:58:18.785601 D:/Tech/GoLang/golang_learning/gostandard_libs/loger_demo/newloger.go:30: This is info
+WARNING: 2022/04/09 17:58:18 newloger.go:31: This is warning.
+ERROR: 2022/04/09 17:58:18 newloger.go:32: This is error
+FATAL: 2022/04/09 17:58:18 newloger.go:33: This is fetal error.

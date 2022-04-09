@@ -1,0 +1,4 @@
+INFO: 2022/04/09 17:51:50 main.go:37: this is an information message!
+WARNING: 2022/04/09 17:51:50 main.go:40: this is a warning
+ERROR: 2022/04/09 17:51:50 main.go:43: this is an error
+FATAL: 2022/04/09 17:51:50 main.go:46: we crashed
