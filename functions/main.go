@@ -1,7 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
+	"math"
 
 	"github.com/erankitcs/golang_learning/functions/simplemaths"
 )
@@ -13,6 +16,83 @@ const (
 	SubtractExpr = MathExpr("subtract")
 	MultiplyExpr = MathExpr("multiply")
 )
+
+type BadReader struct {
+	err error
+}
+
+func (br BadReader) Read(p []byte) (n int, err error) {
+	return -1, br.err
+}
+
+func ReadSomething() error {
+	r := BadReader{errors.New("my nonsense error")}
+	_, err := r.Read([]byte("Reading Something..."))
+	if err != nil {
+		fmt.Printf("an erro occurred .. %s", err)
+		return err
+	}
+	return nil
+
+}
+
+//More error handling
+type SimpleReader struct {
+	count int
+}
+
+var errCatastrophicReader = errors.New("something catastrophic occurred in the reader")
+
+func (sr *SimpleReader) Read(p []byte) (n int, err error) {
+	/*if sr.count == 2 {
+		//panic(errors.New("another error"))
+		panic(errCatastrophicReader)
+	} */
+	if sr.count > 3 {
+		return 0, io.EOF
+	}
+	sr.count += 1
+	return sr.count, nil
+}
+
+func (sr *SimpleReader) Close() error {
+	println("closing reader.")
+	return nil
+}
+
+func ReadFullFile() (err error) {
+	var r io.ReadCloser = &SimpleReader{}
+	defer func() {
+		_ = r.Close()
+		if p := recover(); p == errCatastrophicReader {
+			println(p)
+			err = errors.New("a panic occurred but it is ok")
+		} else if p != nil {
+			panic("an unexpected error occurred and we do not want to recover")
+		}
+	}()
+	defer func() {
+		println("before for loop.")
+	}()
+	for {
+		value, readerErr := r.Read([]byte("text reading..."))
+
+		if readerErr == io.EOF {
+			println("finished reading file, breaking out of loop")
+			break
+		} else if readerErr != nil {
+			err = readerErr
+			return
+		}
+		println(value)
+	}
+
+	defer func() {
+		println("after for-loop")
+	}()
+
+	return nil
+}
 
 func main() {
 	fmt.Printf("Calling Add. \n")
@@ -66,6 +146,32 @@ func main() {
 	fmt.Printf("%f\n", double(2, 3, mathExpression(AddExpr)))
 
 	//Satefull function
+	powerFun := powerOfTwo()
+	powerVal := powerFun()
+	println(powerVal)
+	powerVal = powerFun()
+	println(powerVal)
+	// Bad state of Annonymous function
+	var funcs []func() int64
+	for i := 0; i < 10; i++ {
+		/// here before function is being called i value is changed, hence we changed to cleanI
+		cleanI := i
+		funcs = append(funcs, func() int64 {
+			return int64(math.Pow(float64(cleanI), 2))
+		})
+	}
+
+	for _, f := range funcs {
+		println(f())
+	}
+
+	// Error Handling
+	ReadSomething()
+	//
+	println("\nDeep dive error handling.")
+	if err := ReadFullFile(); err != nil {
+		fmt.Printf("Something bad occured: %s", err)
+	}
 }
 
 // Function Return from Function. Returns a function of two input and one output.
@@ -93,4 +199,14 @@ func mathExpression(exp MathExpr) func(float64, float64) float64 {
 
 func double(f1, f2 float64, mathExp func(float64, float64) float64) float64 {
 	return 2 * mathExp(f1, f2)
+}
+
+// Statefull function
+
+func powerOfTwo() func() int64 {
+	x := 1.0
+	return func() int64 {
+		x += 1
+		return int64(math.Pow(x, 2))
+	}
 }
