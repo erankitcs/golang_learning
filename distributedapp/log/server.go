@@ -18,6 +18,8 @@ func (fl fileLog) Write(data []byte) (int, error) {
 	}
 	defer f.Close()
 	return f.Write(data)
+	//fmt.Println(string(data))
+	//return 1, nil
 }
 
 func Run(destination string) {
@@ -36,5 +38,5 @@ func RegisterHandler() {
 }
 
 func write(msg string) {
-	log.Printf("/%v\n", msg)
+	log.Printf("%v\n", msg)
 }
