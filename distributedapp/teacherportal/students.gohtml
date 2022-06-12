@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students</title>
+</head>
+<body>
+    <h1>Grade Book</h1>
+    {{if len .}}
+        <table> 
+            <tr>
+                <th>Name</th>
+                <th>Average [%]</th>
+            </tr>
+            {{range .}}
+                <tr>
+                    <td>
+                        <a href="/students/{{.ID}}">{{.LastName}}, {{.FirstName}}</a>
+                    </td>
+                    <td>
+                        {{printf "%.1f%%" .Average}}
+                    </td>
+                </tr>
+            {{end}}
+        </table>
+    {{else}}
+        <em>No students found</em>
+    {{end}}
+
+</body>
+</html>
