@@ -83,11 +83,11 @@ func (sh studentHandler) renderStudents(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	rootTemplate.Lookup("students.gohtml").Execute(w, r)
+	rootTemplate.Lookup("students.gohtml").Execute(w, s)
 
 }
 
-func (studentsHandler) renderStudent(w http.ResponseWriter, r *http.Request, id int) {
+func (sh studentHandler) renderStudent(w http.ResponseWriter, r *http.Request, id int) {
 
 	var err error
 	defer func() {

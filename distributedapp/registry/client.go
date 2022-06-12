@@ -12,11 +12,19 @@ import (
 )
 
 func RegisterService(r Registration) error {
+
+	heartbeatURL, err := url.Parse(r.HeartbeatURL)
+	if err != nil {
+		return err
+	}
+	http.HandleFunc(heartbeatURL.Path, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 	serviceUpdateURL, err := url.Parse(r.ServiceUpdateURL)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Service Update URL Recieved - %v \n", serviceUpdateURL.Path)
+	//fmt.Printf("Service Update URL Recieved - %v \n", serviceUpdateURL.Path)
 	http.Handle(serviceUpdateURL.Path, &serviceUpdateHandler{})
 
 	buf := new(bytes.Buffer)
@@ -57,7 +65,7 @@ func (suh serviceUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("Update Recieved: %v \n", p)
+	//fmt.Printf("Update Recieved: %v \n", p)
 	prov.Update(p)
 
 }
@@ -75,7 +83,7 @@ func ShutdownService(serviceURL string) error {
 	}
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("Failed to deregister service. Registry "+
-			"service responded with code %v", res.StatusCode)
+			"service responded with code %v \n", res.StatusCode)
 	}
 	return nil
 
@@ -87,8 +95,8 @@ type providers struct {
 }
 
 func (p *providers) Update(pat patch) {
-	fmt.Println("Updating provider services...")
-	fmt.Println(p.services)
+	//fmt.Println("Updating provider services...")
+	//fmt.Println(p.services)
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	for _, patchEntry := range pat.Added {
@@ -96,14 +104,14 @@ func (p *providers) Update(pat patch) {
 			p.services[patchEntry.Name] = make([]string, 0)
 		}
 		p.services[patchEntry.Name] = append(p.services[patchEntry.Name], patchEntry.URL)
-		fmt.Printf("Service %v with URL %v available now.", patchEntry.Name, patchEntry.URL)
+		fmt.Printf("Service %v with URL %v available now.\n", patchEntry.Name, patchEntry.URL)
 	}
 	for _, patchEntry := range pat.Removed {
 		if providerURLs, ok := p.services[patchEntry.Name]; ok {
 			for i := range providerURLs {
 				if providerURLs[i] == patchEntry.URL {
 					p.services[patchEntry.Name] = append(providerURLs[:i], providerURLs[i+1:]...)
-					fmt.Printf("Service %v with URL %v is NOT available now.", patchEntry.Name, patchEntry.URL)
+					fmt.Printf("Service %v with URL %v is NOT available now.\n", patchEntry.Name, patchEntry.URL)
 				}
 
 			}

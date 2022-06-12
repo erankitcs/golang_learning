@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	registry.SetupRegistryService()
 	http.Handle("/services", &registry.RegistryService{})
 	ctx, cancle := context.WithCancel(context.Background())
 	defer cancle()

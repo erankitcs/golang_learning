@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 const ServerPort = ":3000"
@@ -19,19 +20,19 @@ type registry struct {
 }
 
 func (r *registry) add(reg Registration) error {
-	fmt.Printf("Add request came with Registration- %v\n", reg)
-	fmt.Println(r.registrations)
+	//fmt.Printf("Add request came with Registration- %v\n", reg)
+	//fmt.Println(r.registrations)
 	r.mutex.Lock()
 	r.registrations = append(r.registrations, reg)
-	fmt.Println(r.registrations)
+	//fmt.Println(r.registrations)
 	r.mutex.Unlock()
-	fmt.Println("Before calling Required services.")
+	//fmt.Println("Before calling Required services.")
 	err := r.sendRequiredServices(reg)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	fmt.Printf("Service %v came online. Sending notification \n", reg.ServiceName)
+	fmt.Printf("Service %v came online. Sending notification. \n", reg.ServiceName)
 	r.notify(patch{
 		Added: []patchEntry{
 			patchEntry{
@@ -66,18 +67,66 @@ func (r registry) notify(fullPatch patch) {
 				}
 
 				if sendUpdate {
-					fmt.Printf("Notify Service patch list- %v\n", p)
+					//fmt.Printf("Notify Service patch list- %v\n", p)
 					err := r.sendPatch(p, reg.ServiceUpdateURL)
 					if err != nil {
 						log.Println(err)
 						return
 					}
+
 				}
+				fmt.Println("Concerned Servers are notified.")
 
 			}
 		}(reg)
 	}
 
+}
+
+func (r *registry) heartbeat(freq time.Duration) {
+	for {
+		var wg sync.WaitGroup
+		//fmt.Println("Checking Service health...")
+		for _, reg := range r.registrations {
+			wg.Add(1)
+			go func(reg Registration) {
+				defer wg.Done()
+				success := true
+				for attempt := 0; attempt < 3; attempt++ {
+					res, err := http.Get(reg.HeartbeatURL)
+					if err != nil {
+						log.Println(err)
+					} else if res.StatusCode == http.StatusOK {
+						log.Printf("Heartbeat check passed for %v", reg.ServiceName)
+						if !success {
+							r.add(reg)
+						}
+						break
+					}
+					log.Printf("Heartbeat check failed for %v", reg.ServiceName)
+					if success {
+						success = false
+						r.remove(reg.ServiceURL)
+					}
+					time.Sleep(3 * time.Second)
+
+				}
+
+			}(reg)
+			wg.Wait()
+			time.Sleep(freq)
+		}
+	}
+
+}
+
+var once sync.Once
+
+func SetupRegistryService() {
+	once.Do(func() {
+		fmt.Println("Starting Heartbeat checks...")
+		go reg.heartbeat(5 * time.Second)
+	})
 }
 
 func (r registry) sendRequiredServices(reg Registration) error {
@@ -94,7 +143,7 @@ func (r registry) sendRequiredServices(reg Registration) error {
 			}
 		}
 	}
-	fmt.Printf("Sending Patch to required services- %v with URL - %v\n", p, reg.ServiceUpdateURL)
+	//fmt.Printf("Sending Patch to required services- %v with URL - %v\n", p, reg.ServiceUpdateURL)
 	err := r.sendPatch(p, reg.ServiceUpdateURL)
 	if err != nil {
 		return err
@@ -104,7 +153,7 @@ func (r registry) sendRequiredServices(reg Registration) error {
 }
 
 func (r registry) sendPatch(p patch, url string) error {
-	fmt.Printf("Before sending patch: %v with Update URL: %v \n", p, url)
+	//fmt.Printf("Before sending patch: %v with Update URL: %v \n", p, url)
 	data, err := json.Marshal(p)
 	if err != nil {
 		return err
@@ -171,7 +220,7 @@ func (rs RegistryService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		url := string(payload)
-		fmt.Printf("Removing Service with URL: %v", url)
+		fmt.Printf("Removing Service with URL: %v\n", url)
 		err = reg.remove(url)
 		if err != nil {
 			log.Println(err)

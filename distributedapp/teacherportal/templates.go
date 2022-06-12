@@ -4,9 +4,9 @@ import "html/template"
 
 var rootTemplate *template.Template
 
-func ImportTemplate() error {
+func ImportTemplates() error {
 	var err error
-	rootTemplate, err := template.ParseFiles(
+	rootTemplate, err = template.ParseFiles(
 		"teacherportal/students.gohtml",
 		"teacherportal/student.gohtml",
 	)
