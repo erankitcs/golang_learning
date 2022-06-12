@@ -19,17 +19,68 @@ type registry struct {
 }
 
 func (r *registry) add(reg Registration) error {
+	fmt.Printf("Add request came with Registration- %v\n", reg)
+	fmt.Println(r.registrations)
 	r.mutex.Lock()
 	r.registrations = append(r.registrations, reg)
+	fmt.Println(r.registrations)
 	r.mutex.Unlock()
+	fmt.Println("Before calling Required services.")
 	err := r.sendRequiredServices(reg)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
+	fmt.Printf("Service %v came online. Sending notification \n", reg.ServiceName)
+	r.notify(patch{
+		Added: []patchEntry{
+			patchEntry{
+				Name: reg.ServiceName,
+				URL:  reg.ServiceURL,
+			},
+		},
+	})
 	return nil
 }
 
-func (r *registry) sendRequiredServices(reg Registration) error {
+func (r registry) notify(fullPatch patch) {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
+	for _, reg := range r.registrations {
+		go func(reg Registration) {
+			for _, requiredService := range reg.RequiredServices {
+				p := patch{Added: []patchEntry{}, Removed: []patchEntry{}}
+				sendUpdate := false
+				for _, added := range fullPatch.Added {
+					if added.Name == requiredService {
+						p.Added = append(p.Added, added)
+						sendUpdate = true
+					}
+				}
+
+				for _, removed := range fullPatch.Removed {
+					if removed.Name == requiredService {
+						p.Removed = append(p.Removed, removed)
+						sendUpdate = true
+					}
+				}
+
+				if sendUpdate {
+					fmt.Printf("Notify Service patch list- %v\n", p)
+					err := r.sendPatch(p, reg.ServiceUpdateURL)
+					if err != nil {
+						log.Println(err)
+						return
+					}
+				}
+
+			}
+		}(reg)
+	}
+
+}
+
+func (r registry) sendRequiredServices(reg Registration) error {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 	var p patch
@@ -43,7 +94,7 @@ func (r *registry) sendRequiredServices(reg Registration) error {
 			}
 		}
 	}
-
+	fmt.Printf("Sending Patch to required services- %v with URL - %v\n", p, reg.ServiceUpdateURL)
 	err := r.sendPatch(p, reg.ServiceUpdateURL)
 	if err != nil {
 		return err
