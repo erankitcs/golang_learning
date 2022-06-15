@@ -1,0 +1,3 @@
+#Removing exe file copy built locally.
+*.exe
+*.md
