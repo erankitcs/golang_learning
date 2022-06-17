@@ -13,7 +13,7 @@ import (
 func main() {
 	log.Run("./app.log")
 	var r registry.Registration
-	hostname, port := "localhost", "4000"
+	hostname, port := "logservice", "4000"
 	serviceURL := fmt.Sprintf("http://%v:%v", hostname, port)
 	globalServiceURL := fmt.Sprintf("http://logservice:%v", port)
 	r.ServiceName = registry.LogService
