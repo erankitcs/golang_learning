@@ -23,6 +23,15 @@ docker build -f Dockerfile.gradingservice -t gradingservice .
 docker run -p 6000:6000 --name gradingservice --network=teacherportal -d gradingservice
 ```
 
+#### Teacher Portal service
+```
+docker build -f Dockerfile.teacherportalservice -t teacherportalservice .
+docker run -p 5000:5000 --name teacherportalservice --network=teacherportal -d teacherportalservice
+```
+
+#### Application URL
+http://localhost:5000
+
 
 #### Useful links
 1. https://marcofranssen.nl/docker-tips-and-tricks-for-your-go-projects

@@ -21,7 +21,7 @@ func main() {
 	host, port := "localhost", "5000"
 
 	serviceAddress := fmt.Sprintf("http://%v:%v", host, port)
-
+	globalServiceURL := fmt.Sprintf("http://teacherportalservice:%v", port)
 	var r registry.Registration
 	r.ServiceName = registry.TeacherPortalService
 	r.ServiceURL = serviceAddress
@@ -29,8 +29,8 @@ func main() {
 		registry.LogService,
 		registry.GradingService,
 	}
-	r.ServiceUpdateURL = r.ServiceURL + "/services"
-	r.HeartbeatURL = r.ServiceURL + "/heartbeat"
+	r.ServiceUpdateURL = globalServiceURL + "/services"
+	r.HeartbeatURL = globalServiceURL + "/heartbeat"
 
 	ctx, err := service.Start(
 		context.Background(),

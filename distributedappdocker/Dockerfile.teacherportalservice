@@ -1,0 +1,36 @@
+FROM golang:1.17-alpine as build
+
+# Set necessary environmet variables needed for our image
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
+# Move to working directory /build
+WORKDIR /build
+
+ADD . /build/
+
+RUN go mod tidy
+# Move to  service directory
+WORKDIR /build/cmd/teacherportalservice
+
+RUN mkdir -p /dist
+
+RUN go build -o /dist .
+
+##
+## Deploy
+##
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=build /dist .
+
+COPY teacherportal/*.gohtml  teacherportal/
+
+EXPOSE 5000
+
+CMD [ "./teacherportalservice" ]
