@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option go_package = "pb/messages";
+
+package messages;
+
+message Employee {
+    int32 id = 1 ;
+    int32 badgeNumber = 2;
+    string firstName = 3 ;
+    string lastName = 4;
+    float vacationAccrualRate = 5;
+    float vacationAccrued = 6;
+    repeated Vacation vacations = 7;
+}
+
+message Vacation {
+    int32 id = 1 ;
+    int64 startDate = 2 ;
+    float duration = 3;
+    bool isCancelled = 4;
+}
+
+message GetAllRequest {}
+
+message GetByBadgeNumberRequest {
+    int32 badgeNumber = 1 ;
+}
+
+message EmployeeRequest {
+    Employee employee = 1;
+}
+
+message EmployeeResponse {
+    Employee employee = 1 ;
+}
+
+message AddPhotoRequest {
+    bytes data = 1 ;
+}
+
+message AddPhotoResponse {
+    bool isOK = 1 ;
+}
+
+service EmployeeService {
+    rpc GetByBadgeNumber (GetByBadgeNumberRequest) returns (EmployeeResponse);
+    rpc GetAll (GetAllRequest) returns (stream EmployeeResponse);
+    rpc Save (EmployeeRequest) returns (EmployeeResponse);
+    rpc SaveAll(stream EmployeeRequest) returns (stream EmployeeResponse);
+    rpc AddPhoto (stream AddPhotoRequest) returns (AddPhotoResponse);
+}
