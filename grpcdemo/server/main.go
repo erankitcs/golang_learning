@@ -20,7 +20,7 @@ const port = ":9000"
 
 func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	// Load server's certificate and private key
-	serverCert, err := tls.LoadX509KeyPair("cert/server-cert.pem", "cert/server-key.pem")
+	serverCert, err := tls.LoadX509KeyPair("../cert/server-cert.pem", "../cert/server-key.pem")
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ type employeeServer struct {
 
 func (s *employeeServer) GetByBadgeNumber(ctx context.Context, req *messages.GetByBadgeNumberRequest) (*messages.EmployeeResponse, error) {
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		fmt.Printf("Metadata recieved: %v\n", md)
+		log.Printf("Metadata recieved: %v\n", md)
 	}
 	for _, emp := range employees {
 		if req.BadgeNumber == emp.BadgeNumber {
