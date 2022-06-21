@@ -2,6 +2,9 @@ package main
 
 import (
 	"crypto/tls"
+	"errors"
+	"fmt"
+	"io"
 	"log"
 	"net"
 
@@ -9,6 +12,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -55,21 +59,59 @@ type employeeServer struct {
 }
 
 func (s *employeeServer) GetByBadgeNumber(ctx context.Context, req *messages.GetByBadgeNumberRequest) (*messages.EmployeeResponse, error) {
-	return nil, nil
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		fmt.Printf("Metadata recieved: %v\n", md)
+	}
+	for _, emp := range employees {
+		if req.BadgeNumber == emp.BadgeNumber {
+			return &messages.EmployeeResponse{Employee: &emp}, nil
+		}
+	}
+	return nil, errors.New("employee not found")
 }
 
 func (s *employeeServer) GetAll(req *messages.GetAllRequest, stream messages.EmployeeService_GetAllServer) error {
+	for _, emp := range employees {
+		stream.Send(&messages.EmployeeResponse{Employee: &emp})
+	}
 	return nil
 }
 
 func (s *employeeServer) Save(ctx context.Context, req *messages.EmployeeRequest) (*messages.EmployeeResponse, error) {
-	return nil, nil
+	employees = append(employees, *req.Employee)
+	return &messages.EmployeeResponse{Employee: req.Employee}, nil
 }
 
 func (s *employeeServer) SaveAll(stream messages.EmployeeService_SaveAllServer) error {
+	for {
+		emp, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		employees = append(employees, *emp.Employee)
+		stream.Send(&messages.EmployeeResponse{Employee: emp.Employee})
+	}
+
+	for _, emp := range employees {
+		fmt.Println(emp)
+	}
 	return nil
 }
 
 func (s *employeeServer) AddPhoto(stream messages.EmployeeService_AddPhotoServer) error {
-	return nil
+	imgData := []byte{}
+	for {
+		data, err := stream.Recv()
+		if err == io.EOF {
+			fmt.Printf("File recieved with length : %v\n", len(imgData))
+			return stream.SendAndClose(&messages.AddPhotoResponse{IsOK: true})
+		}
+		if err != nil {
+			return err
+		}
+		imgData = append(imgData, data.Data...)
+	}
 }
