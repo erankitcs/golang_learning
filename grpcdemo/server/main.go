@@ -2,9 +2,12 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 
@@ -18,7 +21,28 @@ import (
 
 const port = ":9000"
 
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
+func clientAuthTypeMode(mtls bool) tls.ClientAuthType {
+	if mtls {
+		return tls.RequireAndVerifyClientCert
+	}
+	return tls.NoClientCert // for no client verification
+}
+
+func loadTLSCredentials(mtls bool) (credentials.TransportCredentials, error) {
+
+	certPool := x509.NewCertPool()
+	if mtls {
+		// Load certificate of the CA who signed client's certificate
+		pemClientCA, err := ioutil.ReadFile("../cert/ca-cert.pem")
+		if err != nil {
+			return nil, err
+		}
+
+		if !certPool.AppendCertsFromPEM(pemClientCA) {
+			return nil, fmt.Errorf("failed to add client CA's certificate")
+		}
+	}
+
 	// Load server's certificate and private key
 	serverCert, err := tls.LoadX509KeyPair("../cert/server-cert.pem", "../cert/server-key.pem")
 	if err != nil {
@@ -28,18 +52,21 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	// Create the credentials and return it
 	config := &tls.Config{
 		Certificates: []tls.Certificate{serverCert},
-		ClientAuth:   tls.NoClientCert, // for no client verification
+		ClientAuth:   clientAuthTypeMode(mtls),
+		ClientCAs:    certPool,
 	}
 	return credentials.NewTLS(config), nil
 
 }
 
 func main() {
+	enablemTLS := flag.Bool("mtls", false, "enable mTLS for connection")
+	flag.Parse()
 	listner, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tlsCredentials, err := loadTLSCredentials()
+	tlsCredentials, err := loadTLSCredentials(*enablemTLS)
 	if err != nil {
 		log.Fatal(err)
 	}

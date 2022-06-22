@@ -6,8 +6,10 @@ import (
 	"crypto/x509"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/erankitcs/golang_learning/grpcdemo/client/pb/messages"
 	"google.golang.org/grpc"
@@ -36,9 +38,20 @@ func loadTLSCredentials(tlstype TlsType) (credentials.TransportCredentials, erro
 		return nil, fmt.Errorf("not able to load Server CA certificate")
 	}
 
+	var clientCert tls.Certificate
+
+	if tlstype == mTlsConn {
+		// Load client's certificate and private key
+		clientCert, err = tls.LoadX509KeyPair("../cert/client-cert.pem", "../cert/client-key.pem")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	config := &tls.Config{
-		RootCAs:    certPool,
-		ServerName: "gogrpcserver.com",
+		RootCAs:      certPool,
+		Certificates: []tls.Certificate{clientCert},
+		//ServerName: "client.gogrpcserver.com",
 	}
 
 	return credentials.NewTLS(config), nil
@@ -60,7 +73,7 @@ func main() {
 	}
 
 	if *enablemTLS {
-		log.Printf("Connecting server %v with TLS=%v", serverAddress, *enablemTLS)
+		log.Printf("Connecting server %v with mTLS=%v", serverAddress, *enablemTLS)
 		tlsCreds, err := loadTLSCredentials(mTlsConn)
 		if err != nil {
 			log.Fatal("cant load Client Certificate for mTLS")
@@ -81,6 +94,14 @@ func main() {
 	switch *option {
 	case 1:
 		SendMetadate(client)
+	case 2:
+		GetByBadgeNumber(client)
+	case 3:
+		GetAll(client)
+	case 4:
+		SaveAll(client)
+	case 5:
+		AddPhoto(client)
 	}
 }
 
@@ -90,10 +111,122 @@ func SendMetadate(client messages.EmployeeServiceClient) {
 	md["caller"] = []string{"Ankit"}
 	ctx := context.Background()
 	ctx = metadata.NewOutgoingContext(ctx, md)
-	emp, err := client.GetByBadgeNumber(ctx, &messages.GetByBadgeNumberRequest{})
+	_, err := client.GetByBadgeNumber(ctx, &messages.GetByBadgeNumberRequest{})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(emp)
+	//fmt.Println(emp)
+}
+
+func GetByBadgeNumber(client messages.EmployeeServiceClient) {
+	fmt.Println("Getting Employee by Badge Number")
+	ctx := context.Background()
+	res, err := client.GetByBadgeNumber(ctx, &messages.GetByBadgeNumberRequest{
+		BadgeNumber: 2080,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res.Employee)
+
+}
+
+func GetAll(client messages.EmployeeServiceClient) {
+	fmt.Println("Getting all Employees...")
+	ctx := context.Background()
+	stream, err := client.GetAll(ctx, &messages.GetAllRequest{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	for {
+		res, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(res.Employee)
+	}
+}
+
+func SaveAll(client messages.EmployeeServiceClient) {
+	fmt.Println("Saving all employees...")
+	saveEmployees := []messages.Employee{
+		{
+			FirstName:   "Ankit",
+			LastName:    "Singh",
+			BadgeNumber: 2008,
+		},
+		{
+			FirstName:   "AnotherAnkit",
+			LastName:    "Singh",
+			BadgeNumber: 2020,
+		}}
+	ctx := context.Background()
+	stream, err := client.SaveAll(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	doneCh := make(chan struct{})
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				doneCh <- struct{}{}
+				break
+			}
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(res.Employee)
+		}
+	}()
+	for _, emp := range saveEmployees {
+		err := stream.Send(&messages.EmployeeRequest{Employee: &emp})
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	stream.CloseSend()
+	<-doneCh
+}
+
+func AddPhoto(client messages.EmployeeServiceClient) {
+	fmt.Println("Adding photo..")
+	f, err := os.Open("Penguins.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	md := metadata.MD{}
+	md.Append("badgeNumber", "2008")
+	ctx := context.Background()
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	stream, err := client.AddPhoto(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for {
+		chunk := make([]byte, 64*1024)
+		n, err := f.Read(chunk)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		if n < len(chunk) {
+			chunk = chunk[:n]
+		}
+		stream.Send(&messages.AddPhotoRequest{Data: chunk})
+	}
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res.IsOK)
+
 }
