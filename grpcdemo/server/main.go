@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -14,9 +13,11 @@ import (
 	"github.com/erankitcs/golang_learning/grpcdemo/server/pb/messages"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 const port = ":9000"
@@ -89,12 +90,15 @@ func (s *employeeServer) GetByBadgeNumber(ctx context.Context, req *messages.Get
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		log.Printf("Metadata recieved: %v\n", md)
 	}
+	if req.BadgeNumber < 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "badge number cant be negative, badge recieved %v", req.BadgeNumber)
+	}
 	for _, emp := range employees {
 		if req.BadgeNumber == emp.BadgeNumber {
 			return &messages.EmployeeResponse{Employee: &emp}, nil
 		}
 	}
-	return nil, errors.New("employee not found")
+	return nil, status.Errorf(codes.NotFound, "employee not found")
 }
 
 func (s *employeeServer) GetAll(req *messages.GetAllRequest, stream messages.EmployeeService_GetAllServer) error {
