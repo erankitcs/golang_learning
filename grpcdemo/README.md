@@ -37,7 +37,7 @@ openssl x509 -in server-cert.pem -noout -text
  # 4. Move certs starts with server into cert folder inside server. 
 ```
 
-3. Build and Run server
+3. Build and Run server, use -mtls=true for running into mTLS Mode.
 ```
 cd server
 go build .
@@ -61,3 +61,37 @@ grpcurl -cacert ca-cert.pem test.gogrpcserver.com:9000 messages.EmployeeService/
 
 *Postman support grpc now*
 https://blog.postman.com/postman-now-supports-grpc/
+
+5. Call via Golang based client.
+- Run go mod init and get client for grpc
+```
+cd client
+go mod init github.com/erankitcs/golang_learning/grpcdemo/client
+protoc --proto_path=../pb ../pb/*.proto --go_out=. --go-grpc_out=.
+go mod tidy
+go build .
+```
+- Run Client, -tls true for TLS setup and -mtls true for mTLS setup.
+```
+./client.exe -tls true
+```
+
+6. Server Testing
+```
+cd server
+go test -v
+```
+
+7. Docker setup for Server
+```
+docker build -t employeegrpcserver -f server/Dockerfile .
+docker run -d -p 9000:9000 -e mtls=true --name employeegrpcserver employeegrpcserver
+```
+8. Docker setup for Client
+```
+docker build -t employeegrpcclient -f client/Dockerfile .
+docker run -e mtls=true employeegrpcclient
+```
+- Docker Links\
+https://www.docker.com/blog/tag/go-env-series/
+https://github.com/chris-crone/containerized-go-dev

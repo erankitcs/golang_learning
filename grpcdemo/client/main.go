@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-const serverAddress = ":9000"
+//const serverAddress = ":9000"
 
 type TlsType string
 
@@ -61,7 +61,10 @@ func main() {
 	option := flag.Int("o", 1, "Command to run")
 	enableTLS := flag.Bool("tls", false, "enable TLS for connection")
 	enablemTLS := flag.Bool("mtls", false, "enable mTLS for connection")
+	serverhost := flag.String("serverhost", "", "Server Host for connection")
+	serverport := flag.String("serverport", "9000", "Server Port for connection")
 	flag.Parse()
+	serverAddress := fmt.Sprintf("%s:%s", *serverhost, *serverport)
 	transportOption := grpc.WithTransportCredentials(insecure.NewCredentials())
 	if *enableTLS {
 		log.Printf("Connecting server %v with TLS=%v", serverAddress, *enableTLS)
