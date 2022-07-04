@@ -85,12 +85,12 @@ go test -v
 7. Docker setup for Server
 ```
 docker build -t employeegrpcserver -f server/Dockerfile .
-docker run -d -p 9000:9000 -e mtls=true --name employeegrpcserver employeegrpcserver
+docker run -d -p 9000:9000 -e tls=mtls --network host --name employeegrpcserver employeegrpcserver
 ```
 8. Docker setup for Client
 ```
 docker build -t employeegrpcclient -f client/Dockerfile .
-docker run -e mtls=true employeegrpcclient
+docker run -e tls=mtls -e opt=1 -e serverhost=localhost --network host --name grpcclient employeegrpcclient
 ```
 - Docker Links\
 https://www.docker.com/blog/tag/go-env-series/

@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const port = ":9000"
+const port = "localhost:9000"
 
 func clientAuthTypeMode(mtls bool) tls.ClientAuthType {
 	if mtls {
@@ -30,7 +30,10 @@ func clientAuthTypeMode(mtls bool) tls.ClientAuthType {
 }
 
 func loadTLSCredentials(mtls bool) (credentials.TransportCredentials, error) {
+	if mtls {
+		fmt.Println("Running server into mTLS mode.")
 
+	}
 	certPool := x509.NewCertPool()
 	if mtls {
 		// Load certificate of the CA who signed client's certificate
@@ -67,6 +70,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("mTLS is %v\n", *enablemTLS)
 	tlsCredentials, err := loadTLSCredentials(*enablemTLS)
 	if err != nil {
 		log.Fatal(err)
