@@ -5,8 +5,8 @@ host: localhost
 info:
   contact:
     email: er.ankit.cs@gmail.com
-  description: the purpose of this API is to provide list of products add new product
-    and update.
+  description: The purpose of this API is to provide list of products, add new product
+    and update the existing product.
   license:
     name: MIT
     url: http://opensource.org/licenses/MIT
