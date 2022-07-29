@@ -18,3 +18,18 @@ http://localhost:9090/3
 Body-
 {"id":3,"name":"tea","description":"A Tea of new type","price":122.21,"sku":"ssdff-sfff-sfff"}
 ```
+
+### Swagger Documentation
+- With Docker on Windows.
+```
+docker pull quay.io/goswagger/swagger
+./swagger.bat
+```
+- Without Docker on Windows.
+```
+./make.bat
+```
+- Without Docker on Linux/Mac.
+```
+./make.bat
+```
