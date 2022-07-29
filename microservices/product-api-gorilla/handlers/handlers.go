@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -19,24 +21,16 @@ func NewProduct(l *log.Logger) *Products {
 
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	lp := data.GetProducts()
-	//d, err := json.Marshal(lp)
-	// Encoder is much faster and memory efficient
 	err := lp.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to parse product data", http.StatusInternalServerError)
 	}
-	//rw.Write(d)
 }
 
 func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	p.l.Printf("Handling PUT request")
-	newprod := &data.Product{}
-	err := newprod.FromJSON(r.Body)
-	if err != nil {
-		http.Error(rw, "Unable to parse product request", http.StatusBadRequest)
-	}
-	//p.l.Printf("New Product %#v", newprod)
-	data.AddProduct(newprod)
+	prod := r.Context().Value(KeyProduct{}).(data.Product)
+	data.AddProduct(&prod)
 }
 
 func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
@@ -46,13 +40,9 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(rw, "Unxpected Id format", http.StatusBadRequest)
 	}
-	prod := &data.Product{}
+	prod := r.Context().Value(KeyProduct{}).(data.Product)
 
-	err = prod.FromJSON(r.Body)
-	if err != nil {
-		http.Error(rw, "Unable to parse product request", http.StatusBadRequest)
-	}
-	err = data.UpdateProduct(id, prod)
+	err = data.UpdateProduct(id, &prod)
 	if err == data.ErrorProductNotFound {
 		http.Error(rw, "Product not found", http.StatusNotFound)
 		return
@@ -63,4 +53,29 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+type KeyProduct struct{}
+
+func (p Products) MiddlewareProductsValidation(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+
+		prod := data.Product{}
+
+		err := prod.FromJSON(r.Body)
+		if err != nil {
+			http.Error(rw, "Unable to parse product request", http.StatusBadRequest)
+			return
+		}
+		//validate the product
+		err = prod.Validate()
+		if err != nil {
+			p.l.Println("[ERROR] Validating the product", err)
+			http.Error(rw, fmt.Sprintf("Error validating the product: %s", err), http.StatusBadRequest)
+			return
+		}
+		ctx := context.WithValue(r.Context(), KeyProduct{}, prod)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(rw, r)
+	})
 }
