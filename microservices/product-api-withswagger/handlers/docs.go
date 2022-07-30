@@ -18,7 +18,7 @@ package handlers
 import "github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
 
 // A list of product return into the response
-// swagger:response productResponse
+// swagger:response productsResponse
 type productsResponseWrapper struct {
 	// All products in the system
 	// in:body

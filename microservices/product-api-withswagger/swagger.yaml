@@ -55,17 +55,25 @@ paths:
       operationId: listProducts
       responses:
         "200":
-          $ref: '#/responses/productResponse'
+          $ref: '#/responses/productsResponse'
       summary: Return a list of product.
       tags:
       - products
   /products/{id}:
     delete:
+      description: Delete a product from database
       operationId: deleteProducts
       responses:
         "201":
           $ref: '#/responses/noContentResponse'
-      summary: Return a list of product.
+      tags:
+      - products
+    get:
+      operationId: listSingleProduct
+      responses:
+        "200":
+          $ref: '#/responses/productResponse'
+      summary: Return a single  product.
       tags:
       - products
 produces:
@@ -77,6 +85,9 @@ responses:
     description: Data structure representing a single product
     schema:
       $ref: '#/definitions/Product'
+  productsResponse:
+    description: A list of product return into the response
+    schema:
       items:
         $ref: '#/definitions/Product'
       type: array

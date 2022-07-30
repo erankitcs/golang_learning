@@ -9,7 +9,7 @@ import (
 // swagger:route GET /products products listProducts
 // Return a list of product.
 // responses:
-//	200: productResponse
+//	200: productsResponse
 func (p *Products) ListAll(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("[DEBUG] get all records")
 	prods := data.GetProducts()
@@ -20,6 +20,10 @@ func (p *Products) ListAll(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:route GET /products/{id} products listSingleProduct
+// Return a single  product.
+// responses:
+//	200: productResponse
 func (p *Products) ListSingle(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("[DEBUG] get single requested product")
 	pid := getProductID(r)
