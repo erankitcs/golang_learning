@@ -11,11 +11,14 @@ import (
 func (p *Products) MiddlewareProductsValidation(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 
-		prod := data.Product{}
+		prod := &data.Product{}
 
 		err := data.FromJSON(prod, r.Body)
 		if err != nil {
-			http.Error(rw, "Unable to parse product request", http.StatusBadRequest)
+			p.l.Println("[ERROR] deserializing product", err)
+
+			rw.WriteHeader(http.StatusBadRequest)
+			data.ToJSON(&GenericError{Message: err.Error()}, rw)
 			return
 		}
 		//validate the product

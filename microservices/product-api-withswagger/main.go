@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
+	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -17,23 +19,24 @@ var bindAddress = ":9090"
 func main() {
 	//Create a logger
 	l := log.New(os.Stdout, "product-api ", log.LstdFlags)
-	//v := data.NewValidation()
+	v := data.NewValidation()
 	// New Product handler
-	//ph := handlers.NewProduct(l, v)
+	ph := handlers.NewProduct(l, v)
 
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
 
-	//getRouter := sm.Methods(http.MethodGet).Subrouter()
-	//getRouter.HandleFunc("/products", ph.)
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/products", ph.ListAll)
+	getRouter.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle)
 
 	//putRouter := sm.Methods(http.MethodPut).Subrouter()
 	//putRouter.HandleFunc("/{id:[0-9]+}", ph.UpdateProduct)
 	//putRouter.Use(ph.MiddlewareProductsValidation)
 
-	//postRouter := sm.Methods(http.MethodPost).Subrouter()
-	//postRouter.HandleFunc("/", ph.AddProduct)
-	//postRouter.Use(ph.MiddlewareProductsValidation)
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/products", ph.Create)
+	postRouter.Use(ph.MiddlewareProductsValidation)
 
 	//creating new server
 	s := http.Server{
