@@ -1,0 +1,20 @@
+basePath: /
+consumes:
+- application/json
+host: localhost
+info:
+  contact:
+    email: er.ankit.cs@gmail.com
+  description: The purpose of this API is to provide list of products, add new product
+    and update the existing product.
+  license:
+    name: MIT
+    url: http://opensource.org/licenses/MIT
+  title: API.
+  version: 0.0.1
+paths: {}
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
