@@ -14,3 +14,34 @@
 //     - application/json
 // swagger:meta
 package handlers
+
+import "github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
+
+// A list of product return into the response
+// swagger:response productResponse
+type productsResponseWrapper struct {
+	// All products in the system
+	// in:body
+	Body []data.Product
+}
+
+// Data structure representing a single product
+// swagger:response productResponse
+type productResponseWrapper struct {
+	// Newly created product
+	// in: body
+	Body data.Product
+}
+
+// No content is returned by this API endpoint
+// swagger:response noContentResponse
+type noContentResponseWrapper struct {
+}
+
+// swagger:parameters deleteProduct
+type productIDParamsWrapper struct {
+	// The id of the product for which the operation relates
+	// in: path
+	// required: true
+	ID int `json:"id"`
+}

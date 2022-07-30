@@ -11,6 +11,7 @@ import (
 
 	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
 	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/handlers"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
 )
 
@@ -30,14 +31,21 @@ func main() {
 	getRouter.HandleFunc("/products", ph.ListAll)
 	getRouter.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle)
 
-	//putRouter := sm.Methods(http.MethodPut).Subrouter()
-	//putRouter.HandleFunc("/{id:[0-9]+}", ph.UpdateProduct)
-	//putRouter.Use(ph.MiddlewareProductsValidation)
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/products", ph.Update)
+	putRouter.Use(ph.MiddlewareProductsValidation)
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/products", ph.Create)
 	postRouter.Use(ph.MiddlewareProductsValidation)
 
+	deleteRouter := sm.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/products/{id:[0-9]+}", ph.Delete)
+
+	ops := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(ops, nil)
+	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 	//creating new server
 	s := http.Server{
 		Addr:         bindAddress,

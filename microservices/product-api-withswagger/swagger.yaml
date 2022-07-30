@@ -1,6 +1,43 @@
 basePath: /
 consumes:
 - application/json
+definitions:
+  Product:
+    description: Product defines the structure for an API product
+    properties:
+      description:
+        description: the description for this poduct
+        maxLength: 10000
+        type: string
+        x-go-name: Description
+      id:
+        description: the id for the product
+        format: int64
+        minimum: 1
+        type: integer
+        x-go-name: ID
+      name:
+        description: the name for this poduct
+        maxLength: 255
+        type: string
+        x-go-name: Name
+      price:
+        description: the price for the product
+        format: float
+        minimum: 0.01
+        type: number
+        x-go-name: Price
+      sku:
+        description: the SKU for the product
+        pattern: '[a-z]+-[a-z]+-[a-z]+'
+        type: string
+        x-go-name: SKU
+    required:
+    - name
+    - price
+    - sku
+    type: object
+    x-go-package: github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data
 host: localhost
 info:
   contact:
@@ -12,9 +49,37 @@ info:
     url: http://opensource.org/licenses/MIT
   title: API.
   version: 0.0.1
-paths: {}
+paths:
+  /products:
+    get:
+      operationId: listProducts
+      responses:
+        "200":
+          $ref: '#/responses/productResponse'
+      summary: Return a list of product.
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      operationId: deleteProducts
+      responses:
+        "201":
+          $ref: '#/responses/noContentResponse'
+      summary: Return a list of product.
+      tags:
+      - products
 produces:
 - application/json
+responses:
+  noContentResponse:
+    description: No content is returned by this API endpoint
+  productResponse:
+    description: Data structure representing a single product
+    schema:
+      $ref: '#/definitions/Product'
+      items:
+        $ref: '#/definitions/Product'
+      type: array
 schemes:
 - http
 swagger: "2.0"

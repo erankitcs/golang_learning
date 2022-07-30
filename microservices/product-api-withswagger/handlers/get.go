@@ -6,6 +6,10 @@ import (
 	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
 )
 
+// swagger:route GET /products products listProducts
+// Return a list of product.
+// responses:
+//	200: productResponse
 func (p *Products) ListAll(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("[DEBUG] get all records")
 	prods := data.GetProducts()
