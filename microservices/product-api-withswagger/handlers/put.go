@@ -6,6 +6,13 @@ import (
 	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
 )
 
+// swagger:route PUT /products products updateProduct
+// Update a products details
+//
+// responses:
+//	201: noContentResponse
+//  404: errorResponse
+//  422: errorValidation
 func (p *Products) Update(rw http.ResponseWriter, r *http.Request) {
 	prod := r.Context().Value(KeyProduct{}).(*data.Product)
 	p.l.Printf("[DEBUG] Updating product for id: %#v\n", prod.ID)

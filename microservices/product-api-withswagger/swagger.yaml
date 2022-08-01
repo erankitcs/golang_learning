@@ -2,6 +2,14 @@ basePath: /
 consumes:
 - application/json
 definitions:
+  GenericError:
+    description: GenericError is a generic error message returned by a server
+    properties:
+      message:
+        type: string
+        x-go-name: Message
+    type: object
+    x-go-package: github.com/erankitcs/golang_learning/microservices/product-api-withswagger/handlers
   Product:
     description: Product defines the structure for an API product
     properties:
@@ -59,10 +67,56 @@ paths:
       summary: Return a list of product.
       tags:
       - products
+    post:
+      operationId: createProduct
+      parameters:
+      - description: The product to be updated.
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/Product'
+      responses:
+        "200":
+          $ref: '#/responses/productsResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "422":
+          $ref: '#/responses/errorValidation'
+      summary: Create a new product.
+      tags:
+      - products
+    put:
+      description: Update a products details
+      operationId: updateProduct
+      parameters:
+      - description: The product to be updated.
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/Product'
+      responses:
+        "201":
+          $ref: '#/responses/noContentResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+        "422":
+          $ref: '#/responses/errorValidation'
+      tags:
+      - products
   /products/{id}:
     delete:
       description: Delete a product from database
-      operationId: deleteProducts
+      operationId: deleteProduct
+      parameters:
+      - description: The id of the product for which the operation relates
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
       responses:
         "201":
           $ref: '#/responses/noContentResponse'
@@ -70,6 +124,14 @@ paths:
       - products
     get:
       operationId: listSingleProduct
+      parameters:
+      - description: The id of the product for which the operation relates
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
       responses:
         "200":
           $ref: '#/responses/productResponse'
@@ -79,6 +141,14 @@ paths:
 produces:
 - application/json
 responses:
+  errorResponse:
+    description: Generic error message returned as a string
+    schema:
+      $ref: '#/definitions/GenericError'
+  errorValidation:
+    description: Validation error message returned as a string
+    schema:
+      $ref: '#/definitions/GenericError'
   noContentResponse:
     description: No content is returned by this API endpoint
   productResponse:

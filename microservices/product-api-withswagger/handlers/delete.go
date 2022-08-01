@@ -6,7 +6,7 @@ import (
 	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
 )
 
-// swagger:route DELETE /products/{id} products deleteProducts
+// swagger:route DELETE /products/{id} products deleteProduct
 // Delete a product from database
 // responses:
 //	201: noContentResponse

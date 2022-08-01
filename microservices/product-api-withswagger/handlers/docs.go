@@ -17,6 +17,22 @@ package handlers
 
 import "github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
 
+// Generic error message returned as a string
+// swagger:response errorResponse
+type errorResponseWrapper struct {
+	// Description of the error
+	// in: body
+	Body GenericError
+}
+
+// Validation error message returned as a string
+// swagger:response errorValidation
+type errorValidationWrapper struct {
+	// Description of the error
+	// in: body
+	Body GenericError
+}
+
 // A list of product return into the response
 // swagger:response productsResponse
 type productsResponseWrapper struct {
@@ -38,10 +54,18 @@ type productResponseWrapper struct {
 type noContentResponseWrapper struct {
 }
 
-// swagger:parameters deleteProduct
+// swagger:parameters deleteProduct listSingleProduct
 type productIDParamsWrapper struct {
 	// The id of the product for which the operation relates
 	// in: path
 	// required: true
 	ID int `json:"id"`
+}
+
+// swagger:parameters updateProduct createProduct
+type productParamsWrapper struct {
+	// The product to be updated.
+	// in: body
+	// required: true
+	Body data.Product
 }
