@@ -12,6 +12,7 @@ import (
 	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/data"
 	"github.com/erankitcs/golang_learning/microservices/product-api-withswagger/handlers"
 	"github.com/go-openapi/runtime/middleware"
+	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -46,10 +47,12 @@ func main() {
 	sh := middleware.Redoc(ops, nil)
 	getRouter.Handle("/docs", sh)
 	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+
+	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"http://localhost:3000"}))
 	//creating new server
 	s := http.Server{
 		Addr:         bindAddress,
-		Handler:      sm,
+		Handler:      ch(sm),
 		ErrorLog:     l,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
