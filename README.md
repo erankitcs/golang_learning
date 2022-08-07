@@ -1,5 +1,5 @@
 # GoLang Programming Learning
-This repo is created for learning GO language. It consist of basics of goland and advanced use cases.
+This repo is created for learning GO language. It consist of basics of golang and advanced use cases.
 
 ## Basics
 
@@ -29,7 +29,6 @@ This repo is created for learning GO language. It consist of basics of goland an
 ### Web Services
 1. [A Simple Web Service in Golang](webservice)
 2. [A Pluralsight Fifa World Cup WebService](pluralsight_projects/golang-fifa-world-cup-web-service)
-3. 
 
 ### Distributed Application Programming
 1. A true distributed system in go along with in-built load balancing and auto discovery [Distributed App in Go](distributedapp)
