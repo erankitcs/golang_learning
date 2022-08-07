@@ -1,0 +1,15 @@
+body {
+  width: 600px;
+}
+table {
+  border-collapse: collapse;
+}
+
+tr > :is(th, td) {
+  border: 1px solid black;
+  padding: 5px;
+}
+
+tr > :is(th, td):not(:first-child) {
+  text-align: center;
+}
