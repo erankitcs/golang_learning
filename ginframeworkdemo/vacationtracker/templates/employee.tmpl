@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PTO Events - {{.LastName}}, {{.FirstName}}</title>
+  <link rel="stylesheet" href="/public/app.css">
+</head>
+<body>
+  <h1>PTO Information for {{.LastName}}, {{.FirstName}}</h1>
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Amount [h]</th>
+      <th>Type</th>
+      <th>Status</th>
+    </tr>
+    {{range .TimeOff}}
+    <tr>
+      <td>{{.StartDate.Format "02-Jan"}}</td>
+      <td>{{.Amount}}</td>
+      <td>{{.Type}}</td>
+      <td>{{.Status}}</td>
+    </tr>
+    {{end}}
+    
+  </table>
+
+  <fieldset>
+    <legend>Request PTO</legend>
+    <form action="/employees/{{.ID}}" method="post">
+      <table>
+        <tr>
+          <td>Date</td>
+          <td><input type="date" name="date" id="date"></td>
+        </tr>
+        <tr>
+          <td>Amount [h]</td>
+          <td><input type="number" name="amount" id="amount" min="0" step="0.5"></td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td>
+            <button type="submit">Submit</button>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </fieldset>
+</body>
+</html>

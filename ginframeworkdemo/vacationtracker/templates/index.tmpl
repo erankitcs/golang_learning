@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Vacation Tracker</title>
+  <link rel="stylesheet" href="/public/app.css">
+</head>
+<body>
+  <h1>Employee Vacation Tracker</h1>
+  <table>
+      <tr>
+        <th>ID</th>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Total PTO</th>
+        <th>PTO Events</th>
+      </tr>
+    {{ range . }}
+      <tr>
+        <td><a href="./employees/{{.ID}}">{{.ID}}</a></td>
+        <td>{{.LastName}}</td>
+        <td>{{.FirstName}}</td>
+        <td>{{.TotalPTO}}</td>
+        <td>{{.TimeOff | len}}</td>
+      </tr>
+    {{ end }}
+  </table>
+</body>
+</html>
