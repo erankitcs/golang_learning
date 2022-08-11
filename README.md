@@ -35,6 +35,7 @@ This repo is created for learning GO language. It consist of basics of golang an
 
 ### Web based Application in Golang
 1. [A Teacher Portal Web App](distributedapp/teacherportal)
+2. [A Employee Vacation Tracker Web App Using gin framework](ginframeworkdemo)
 
 ### Microservices with Golang
 1. [Microservice in golang basics](microservices/product-api)
